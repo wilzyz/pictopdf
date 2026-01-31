@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image to PDF Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-image: url("images/background.png");
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-100 min-h-screen flex flex-col items-center justify-center "
+  >
+    <!-- Main Upload Section -->
+<div class="bg-yellow-50 p-6 md:p-8 rounded-xl shadow-lg max-w-3xl w-full md:mx-14 sm:mx-10">
+
+      <h1 class="text-2xl font-bold mb-6 text-center">Convert Images to PDF</h1>
+
+      <!-- Dropzone -->
+      <label class="block mb-2 font-semibold">Upload Images:</label>
+      <div
+        id="dropzone"
+        class="mb-4 w-full p-4 md:p-6 border-2 border-dashed border-gray-400 rounded-lg text-center cursor-pointer hover:border-green-600 transition-colors bg-green-50"
+      >
+        <p class="text-gray-600">Drag & drop images here or click to upload</p>
+        <input
+          type="file"
+          id="images"
+          multiple
+          accept="image/*"
+          class="hidden"
+        />
+      </div>
+
+      <!-- Thumbnail preview -->
+      <div id="filePreview" class="mb-4 flex flex-wrap gap-2"></div>
+
+      <!-- Paper size & PDF option -->
+      <label class="block mb-2 font-semibold">Select Paper Size:</label>
+      <select
+        id="paperSize"
+        class="mb-4 w-full p-2 border border-gray-300 rounded-lg bg-green-800 text-white"
+      >
+        <option value="a4">A4</option>
+        <option value="letter">Letter</option>
+        <option value="legal">Legal</option>
+      </select>
+
+      <label class="block mb-2 font-semibold">PDF Option:</label>
+      <select
+        id="pdfOption"
+        class="mb-4 w-full p-2 border border-gray-300 rounded-lg bg-green-800 text-white"
+      >
+        <option value="merged">Merged PDF</option>
+        <option value="separate">Separate PDFs</option>
+      </select>
+
+      <button
+        id="generateBtn"
+        class="w-full bg-orange-900 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+      >
+        Generate PDF
+      </button>
+    </div>
+
+    <!-- PDF Naming Section -->
+    <div
+      id="pdfNamingSection"
+      class="hidden bg-yellow-50 p-6 md:p-8 rounded-xl shadow-lg max-w-3xl w-full md:mx-14 sm:mx-10 mx-5 mt-4"
+    >
+      <h2 class="text-xl font-bold mb-4 text-center">Name Your PDF(s)</h2>
+      <div id="pdfList" class="flex flex-col gap-4"></div>
+      <button
+        id="downloadPDFBtn"
+        class="w-full bg-orange-900 hover:bg-orange-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors mt-5"
+      >
+        Download PDF(s)
+      </button>
+    </div>
+
+    <!-- Fullscreen modal for preview/removal -->
+    <div
+      id="imageModal"
+      class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-50 p-4"
+    >
+      <img
+        id="modalImg"
+        src=""
+        class="max-h-[80%] max-w-[80%] rounded-lg mb-4"
+      />
+      <div class="flex gap-4">
+        <button
+          id="keepBtn"
+          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Keep
+        </button>
+        <button
+          id="removeBtn"
+          class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+        >
+          Remove
+        </button>
+        <button
+          onclick="closeModal()"
+          class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const dropzone = document.getElementById("dropzone");
+      const fileInput = document.getElementById("images");
+      const filePreview = document.getElementById("filePreview");
+      const imageModal = document.getElementById("imageModal");
+      const modalImg = document.getElementById("modalImg");
+      const removeBtn = document.getElementById("removeBtn");
+
+      const generateBtn = document.getElementById("generateBtn");
+      const pdfNamingSection = document.getElementById("pdfNamingSection");
+      const pdfList = document.getElementById("pdfList");
+      const downloadPDFBtn = document.getElementById("downloadPDFBtn");
+
+      let tempFiles = []; // {file, dataURL}
+      let currentIndex = null;
+
+      // Convert file to dataURL
+      function fileToDataURL(file) {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Handle uploaded files
+      async function handleFiles(files) {
+        for (const file of files) {
+          const dataURL = await fileToDataURL(file);
+          tempFiles.push({ file, dataURL });
+        }
+        updateFilePreview();
+      }
+
+      // Update file preview thumbnails
+      function updateFilePreview() {
+        filePreview.innerHTML = "";
+        tempFiles.forEach((fileObj, index) => {
+          const div = document.createElement("div");
+          div.className =
+            "relative w-24 h-24 border border-gray-300 rounded-lg overflow-hidden cursor-pointer flex flex-col";
+
+          const img = document.createElement("img");
+          img.src = fileObj.dataURL;
+          img.className = "object-cover w-full h-20";
+          img.addEventListener("click", () => openModal(index));
+          div.appendChild(img);
+
+          const removeTextBtn = document.createElement("button");
+          removeTextBtn.innerText = "REMOVE";
+          removeTextBtn.className =
+            "w-full bg-red-600 text-white text-xs hover:bg-red-700";
+          removeTextBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            tempFiles.splice(index, 1);
+            updateFilePreview();
+          });
+          div.appendChild(removeTextBtn);
+
+          filePreview.appendChild(div);
+        });
+        dropzone.querySelector("p").textContent =
+          `${tempFiles.length} file(s) uploaded`;
+      }
+
+      // Modal functions
+      function openModal(index) {
+        currentIndex = index;
+        modalImg.src = tempFiles[index].dataURL;
+        imageModal.classList.remove("hidden");
+      }
+
+      function closeModal() {
+        currentIndex = null;
+        imageModal.classList.add("hidden");
+      }
+
+      removeBtn.addEventListener("click", () => {
+        if (currentIndex !== null) {
+          tempFiles.splice(currentIndex, 1);
+          closeModal();
+          updateFilePreview();
+        }
+      });
+
+      // Drag & drop
+      fileInput.addEventListener("change", () =>
+        handleFiles(Array.from(fileInput.files)),
+      );
+      dropzone.addEventListener("click", () => fileInput.click());
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("border-green-600", "bg-green-100");
+      });
+      dropzone.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("border-green-600", "bg-green-100");
+      });
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("border-green-600", "bg-green-100");
+        const files = Array.from(e.dataTransfer.files).filter((f) =>
+          f.type.startsWith("image/"),
+        );
+        handleFiles(files);
+      });
+
+      // Generate PDF naming inputs
+      generateBtn.addEventListener("click", () => {
+        if (!tempFiles.length) {
+          alert("Please upload at least one image.");
+          return;
+        }
+
+        const pdfOption = document.getElementById("pdfOption").value;
+        pdfList.innerHTML = "";
+        pdfNamingSection.classList.remove("hidden");
+
+        if (pdfOption === "merged") {
+          const container = document.createElement("div");
+          container.className = "flex flex-col items-center gap-2";
+
+          const img = document.createElement("img");
+          img.src = tempFiles[0].dataURL;
+          img.className = "max-h-40 rounded border border-gray-300";
+          container.appendChild(img);
+
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = "Enter PDF filename";
+          input.value = "";
+          input.className = "border p-2 rounded w-full text-center";
+          container.appendChild(input);
+
+          pdfList.appendChild(container);
+        } else {
+          tempFiles.forEach((fileObj, index) => {
+            const container = document.createElement("div");
+            container.className = "flex flex-col items-center gap-2";
+
+            const img = document.createElement("img");
+            img.src = fileObj.dataURL;
+            img.className = "max-h-40 rounded border border-gray-300";
+            container.appendChild(img);
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.placeholder = `Enter filename for image #${index + 1}`;
+            input.value = ``;
+            input.className = "border p-2 rounded w-full text-center";
+            container.appendChild(input);
+
+            pdfList.appendChild(container);
+          });
+        }
+      });
+
+      // Download PDFs
+      downloadPDFBtn.addEventListener("click", async () => {
+        const { jsPDF } = window.jspdf;
+        const paperSize = document.getElementById("paperSize").value;
+        const pdfOption = document.getElementById("pdfOption").value;
+        const paperDimensions = {
+          a4: [210, 297],
+          letter: [216, 279],
+          legal: [216, 356],
+        };
+        const [widthMm, heightMm] = paperDimensions[paperSize];
+        const margin = 2;
+
+        if (pdfOption === "merged") {
+          const pdf = new jsPDF({ unit: "mm", format: [widthMm, heightMm] });
+          for (let i = 0; i < tempFiles.length; i++) {
+            const imgData = await fileToDataURL(tempFiles[i].file);
+            const img = new Image();
+            img.src = imgData;
+            await new Promise((resolve) => {
+              img.onload = () => {
+                const ratio = Math.min(
+                  (widthMm - 2 * margin) / img.width,
+                  (heightMm - 2 * margin) / img.height,
+                );
+                const imgWidth = img.width * ratio;
+                const imgHeight = img.height * ratio;
+                const x = (widthMm - imgWidth) / 2;
+                const y = (heightMm - imgHeight) / 2;
+                if (i > 0) pdf.addPage();
+                pdf.addImage(img, "JPEG", x, y, imgWidth, imgHeight);
+                resolve();
+              };
+            });
+          }
+          const filename = pdfList.querySelector("input").value || "";
+          pdf.save(filename.endsWith(".pdf") ? filename : filename + ".pdf");
+        } else {
+          const inputs = pdfList.querySelectorAll("input");
+          for (let i = 0; i < tempFiles.length; i++) {
+            const pdf = new jsPDF({ unit: "mm", format: [widthMm, heightMm] });
+            const imgData = await fileToDataURL(tempFiles[i].file);
+            const img = new Image();
+            img.src = imgData;
+            await new Promise((resolve) => {
+              img.onload = () => {
+                const ratio = Math.min(
+                  (widthMm - 2 * margin) / img.width,
+                  (heightMm - 2 * margin) / img.height,
+                );
+                const imgWidth = img.width * ratio;
+                const imgHeight = img.height * ratio;
+                const x = (widthMm - imgWidth) / 2;
+                const y = (heightMm - imgHeight) / 2;
+                pdf.addImage(img, "JPEG", x, y, imgWidth, imgHeight);
+                resolve();
+              };
+            });
+            let filename = inputs[i].value || `image_${i + 1}.pdf`;
+            if (!filename.toLowerCase().endsWith(".pdf")) filename += ".pdf";
+            pdf.save(filename);
+          }
+        }
+
+        pdfNamingSection.classList.add("hidden");
+      });
+    </script>
+  </body>
+</html>
