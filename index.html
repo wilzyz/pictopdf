@@ -333,8 +333,8 @@
           const subject = document.getElementById("subjectInput").value.trim();
           const test = document.getElementById("activityType").value;
           fixedName.innerText = test
-  ? "SANTIAGO, FHRIANE G_" + test + "_" + subject
-  : "SANTIAGO, FHRIANE G_" + subject;
+            ? "SANTIAGO, FHRIANE G_" + test + "_" + subject
+            : "SANTIAGO, FHRIANE G_" + subject;
           fixedName.className = "text-end p-2 italic font-bold";
 
           // Editable part
@@ -361,12 +361,14 @@
             const filenameDiv = document.createElement("div");
             filenameDiv.className = "flex gap-2 w-full";
 
-          const fixedName = document.createElement("span");
-          const subject = document.getElementById("subjectInput").value.trim();
-          const test = document.getElementById("activityType").value;
-          fixedName.innerText = test
-  ? "SANTIAGO, FHRIANE G_" + test + "_" + subject
-  : "SANTIAGO, FHRIANE G_" + subject;
+            const fixedName = document.createElement("span");
+            const subject = document
+              .getElementById("subjectInput")
+              .value.trim();
+            const test = document.getElementById("activityType").value;
+            fixedName.innerText = test
+              ? "SANTIAGO, FHRIANE G_" + test + "_" + subject
+              : "SANTIAGO, FHRIANE G_" + subject;
             fixedName.className = "text-end p-2 italic font-bold";
 
             const input = document.createElement("input");
@@ -424,10 +426,11 @@
           const extra = pdfList.querySelector("input").value.trim();
           const test = document.getElementById("activityType").value;
 
-          let filename = `SANTIAGO, FHRIANE G_`;
-          if (test) filename += `${test}_`;
-          if (subject) filename += `${subject}`;
-          if (extra) filename += `_${extra}`;
+          const parts = ["SANTIAGO, FHRIANE G", test, subject, extra].filter(
+            Boolean,
+          );
+
+          const filename = parts.join("_");
 
           pdf.save(filename + ".pdf");
 
@@ -453,15 +456,17 @@
                 resolve();
               };
             });
-          const subject = document.getElementById("subjectInput").value.trim();
-          const extra = pdfList.querySelector("input").value.trim();
-          const test = document.getElementById("activityType").value;
+            const subject = document
+              .getElementById("subjectInput")
+              .value.trim();
+            const extra = pdfList.querySelector("input").value.trim();
+            const test = document.getElementById("activityType").value;
 
-            let filename = `SANTIAGO, FHRIANE G_`;
-            if (test) filename += ` ${test}_`;
-            if (subject) filename += ` ${subject}`;
-            if (extra) filename += `_${extra}`;
-            else filename += ` ${i + 1}`;
+            const parts = ["SANTIAGO, FHRIANE G", test, subject, extra].filter(
+              Boolean,
+            );
+
+            const filename = parts.join("_");
 
             pdf.save(filename + ".pdf");
           }
@@ -469,9 +474,9 @@
 
         pdfNamingSection.classList.add("hidden");
         // ✅ Refresh page after download(s)
-  setTimeout(() => {
-    window.location.reload();
-  }, 500);
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       });
     </script>
   </body>
