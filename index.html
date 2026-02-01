@@ -83,6 +83,22 @@
         <option value="merged">Merged PDF</option>
         <option value="separate">Separate PDFs</option>
       </select>
+
+      <label class="block mb-2 font-semibold">Type of Test:</label>
+      <select
+        id="activityType"
+        class="mb-4 w-full p-2 border border-gray-300 rounded-lg bg-green-800 text-white"
+      >
+        <option value="QUIZ 1">QUIZ 1</option>
+        <option value="QUIZ 2">QUIZ 2</option>
+        <option value="QUIZ 3">QUIZ 3</option>
+        <option value="QUIZ 4">QUIZ 4</option>
+        <option value="QUIZ 5">QUIZ 5</option>
+        <option value="QUIZ 6">QUIZ 6</option>
+        <option value="MIDTERM EXAM">MIDTERM EXAM</option>
+        <option value="FINAL EXAM">FINAL EXAM</option>
+      </select>
+
       <label class="block mb-2 font-semibold">Subject:</label>
       <input
         type="text"
@@ -314,7 +330,8 @@
           // Fixed, uneditable part
           const fixedName = document.createElement("span");
           const subject = document.getElementById("subjectInput").value.trim();
-          fixedName.innerText = "SANTIAGO FHRIANE G " + subject;
+          const test = document.getElementById("activityType").value;
+          fixedName.innerText = "SANTIAGO FHRIANE G_"+ test + "_" + subject;
           fixedName.className = "text-end p-2 italic font-bold";
 
           // Editable part
@@ -342,10 +359,9 @@
             filenameDiv.className = "flex gap-2 w-full";
 
             const fixedName = document.createElement("span");
-            const subject = document
-              .getElementById("subjectInput")
-              .value.trim();
-            fixedName.innerText = "SANTIAGO FHRIANE G " + subject;
+          const subject = document.getElementById("subjectInput").value.trim();
+          const test = document.getElementById("activityType").value;
+          fixedName.innerText = "SANTIAGO FHRIANE G_"+ test + "_" + subject;
             fixedName.className = "text-end p-2 italic font-bold";
 
             const input = document.createElement("input");
@@ -401,10 +417,12 @@
           }
           const subject = document.getElementById("subjectInput").value.trim();
           const extra = pdfList.querySelector("input").value.trim();
+          const test = document.getElementById("activityType").value;
 
-          let filename = `SANTIAGO FHRIANE G`;
-          if (subject) filename += ` ${subject}`;
-          if (extra) filename += ` ${extra}`;
+          let filename = `SANTIAGO FHRIANE G_`;
+          if (test) filename += `${test}_`;
+          if (subject) filename += `${subject}`;
+          if (extra) filename += `_${extra}`;
 
           pdf.save(filename + ".pdf");
 
@@ -430,14 +448,14 @@
                 resolve();
               };
             });
-            const subject = document
-              .getElementById("subjectInput")
-              .value.trim();
-            const extra = inputs[i].value.trim();
+          const subject = document.getElementById("subjectInput").value.trim();
+          const extra = pdfList.querySelector("input").value.trim();
+          const test = document.getElementById("activityType").value;
 
-            let filename = `SANTIAGO FHRIANE G`;
+            let filename = `SANTIAGO FHRIANE G_`;
+            if (test) filename += ` ${test}_`;
             if (subject) filename += ` ${subject}`;
-            if (extra) filename += ` ${extra}`;
+            if (extra) filename += `_${extra}`;
             else filename += ` ${i + 1}`;
 
             pdf.save(filename + ".pdf");
