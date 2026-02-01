@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image to PDF Converter</title>
-    <link rel="icon" type="image/svg+xml" href="images/icon.svg">
+    <link rel="icon" type="image/svg+xml" href="images/icon.svg" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,6 +12,26 @@
         background-image: url("images/background.png");
         background-repeat: no-repeat;
         background-size: cover;
+      }
+      .loader {
+        border-top-color: #f97316; /* Orange */
+        border-right-color: transparent;
+        border-bottom-color: transparent;
+        border-left-color: transparent;
+        border-width: 8px;
+        border-style: solid;
+        border-radius: 50%;
+        width: 64px;
+        height: 64px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
@@ -63,6 +83,13 @@
         <option value="merged">Merged PDF</option>
         <option value="separate">Separate PDFs</option>
       </select>
+      <label class="block mb-2 font-semibold">Subject:</label>
+      <input
+        type="text"
+        id="subjectInput"
+        placeholder="e.g. Math Quiz, Science Exam"
+        class="mb-4 w-full p-2 border border-gray-300 rounded-lg text-center"
+      />
 
       <button
         id="generateBtn"
@@ -118,8 +145,17 @@
         </button>
       </div>
     </div>
+    <div
+      id="loadingOverlay"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="loader border-8 border-t-orange-900 border-r-transparent border-b-transparent border-l-transparent rounded-full w-16 h-16 animate-spin"
+      ></div>
+    </div>
 
     <script>
+      let isUploading = false;
       const dropzone = document.getElementById("dropzone");
       const fileInput = document.getElementById("images");
       const filePreview = document.getElementById("filePreview");
@@ -143,14 +179,40 @@
           reader.readAsDataURL(file);
         });
       }
+      const loadingOverlay = document.getElementById("loadingOverlay");
 
-      // Handle uploaded files
+      function showLoading() {
+        loadingOverlay.classList.remove("hidden");
+        dropzone.classList.add("opacity-50", "pointer-events-none");
+        fileInput.disabled = true;
+      }
+
+      function hideLoading() {
+        loadingOverlay.classList.add("hidden");
+        dropzone.classList.remove("opacity-50", "pointer-events-none");
+        fileInput.disabled = false;
+      }
+
       async function handleFiles(files) {
-        for (const file of files) {
-          const dataURL = await fileToDataURL(file);
-          tempFiles.push({ file, dataURL });
+        if (isUploading) return; // prevent double upload
+        isUploading = true;
+
+        showLoading();
+
+        try {
+          for (const file of files) {
+            const dataURL = await fileToDataURL(file);
+            tempFiles.push({ file, dataURL });
+          }
+          updateFilePreview();
+        } catch (err) {
+          console.error("Upload error:", err);
+          alert("Something went wrong while uploading images.");
+        } finally {
+          hideLoading(); // ✅ ALWAYS runs
+          isUploading = false; // unlock
+          fileInput.value = ""; // ✅ allow re-upload same files
         }
-        updateFilePreview();
       }
 
       // Update file preview thumbnails
@@ -251,9 +313,9 @@
 
           // Fixed, uneditable part
           const fixedName = document.createElement("span");
-          fixedName.innerText = "SANTIAGO FHRIANE G";
-          fixedName.className =
-            "text-end p-2 italic";
+          const subject = document.getElementById("subjectInput").value.trim();
+          fixedName.innerText = "SANTIAGO FHRIANE G " + subject;
+          fixedName.className = "text-end p-2 italic font-bold";
 
           // Editable part
           const input = document.createElement("input");
@@ -280,9 +342,11 @@
             filenameDiv.className = "flex gap-2 w-full";
 
             const fixedName = document.createElement("span");
-            fixedName.innerText = "SANTIAGO FHRIANE G";
-            fixedName.className =
-              "text-end p-2 italic";
+            const subject = document
+              .getElementById("subjectInput")
+              .value.trim();
+            fixedName.innerText = "SANTIAGO FHRIANE G " + subject;
+            fixedName.className = "text-end p-2 italic font-bold";
 
             const input = document.createElement("input");
             input.type = "text";
@@ -335,7 +399,15 @@
               };
             });
           }
-          const filename = pdfList.querySelector("input").value || "";
+          const subject = document.getElementById("subjectInput").value.trim();
+          const extra = pdfList.querySelector("input").value.trim();
+
+          let filename = `SANTIAGO FHRIANE G`;
+          if (subject) filename += ` ${subject}`;
+          if (extra) filename += ` ${extra}`;
+
+          pdf.save(filename + ".pdf");
+
           pdf.save(filename.endsWith(".pdf") ? filename : filename + ".pdf");
         } else {
           const inputs = pdfList.querySelectorAll("input");
@@ -358,13 +430,25 @@
                 resolve();
               };
             });
-            let filename = inputs[i].value || `image_${i + 1}.pdf`;
-            if (!filename.toLowerCase().endsWith(".pdf")) filename += ".pdf";
-            pdf.save(filename);
+            const subject = document
+              .getElementById("subjectInput")
+              .value.trim();
+            const extra = inputs[i].value.trim();
+
+            let filename = `SANTIAGO FHRIANE G`;
+            if (subject) filename += ` ${subject}`;
+            if (extra) filename += ` ${extra}`;
+            else filename += ` ${i + 1}`;
+
+            pdf.save(filename + ".pdf");
           }
         }
 
         pdfNamingSection.classList.add("hidden");
+        // ✅ Refresh page after download(s)
+  setTimeout(() => {
+    window.location.reload();
+  }, 500);
       });
     </script>
   </body>
