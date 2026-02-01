@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Image to PDF Converter</title>
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="icon" type="image/svg+xml" href="images/icon.svg">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -16,11 +16,12 @@
     </style>
   </head>
   <body
-    class="bg-gray-100 min-h-screen flex flex-col items-center justify-center "
+    class="bg-gray-100 min-h-screen flex flex-col items-center justify-center"
   >
     <!-- Main Upload Section -->
-<div class="bg-yellow-50 p-6 md:p-8 rounded-xl shadow-lg max-w-3xl w-full md:mx-14 sm:mx-10">
-
+    <div
+      class="bg-yellow-50 p-6 md:p-8 rounded-xl shadow-lg max-w-3xl w-full md:mx-14 sm:mx-10"
+    >
       <h1 class="text-2xl font-bold mb-6 text-center">Convert Images to PDF</h1>
 
       <!-- Dropzone -->
@@ -51,6 +52,7 @@
         <option value="a4">A4</option>
         <option value="letter">Letter</option>
         <option value="legal">Legal</option>
+        <option value="a3">A3</option>
       </select>
 
       <label class="block mb-2 font-semibold">PDF Option:</label>
@@ -244,12 +246,24 @@
           img.className = "max-h-40 rounded border border-gray-300";
           container.appendChild(img);
 
+          const filenameDiv = document.createElement("div");
+          filenameDiv.className = "flex gap-2 w-full";
+
+          // Fixed, uneditable part
+          const fixedName = document.createElement("span");
+          fixedName.innerText = "SANTIAGO FHRIANE G";
+          fixedName.className =
+            "text-end p-2 italic";
+
+          // Editable part
           const input = document.createElement("input");
           input.type = "text";
-          input.placeholder = "Enter PDF filename";
-          input.value = "";
-          input.className = "border p-2 rounded w-full text-center";
-          container.appendChild(input);
+          input.placeholder = "Quiz, Exam, or Subject Name";
+          input.className = "border p-2 rounded flex-1 text-center";
+
+          filenameDiv.appendChild(fixedName);
+          filenameDiv.appendChild(input);
+          container.appendChild(filenameDiv);
 
           pdfList.appendChild(container);
         } else {
@@ -262,12 +276,22 @@
             img.className = "max-h-40 rounded border border-gray-300";
             container.appendChild(img);
 
+            const filenameDiv = document.createElement("div");
+            filenameDiv.className = "flex gap-2 w-full";
+
+            const fixedName = document.createElement("span");
+            fixedName.innerText = "SANTIAGO FHRIANE G";
+            fixedName.className =
+              "text-end p-2 italic";
+
             const input = document.createElement("input");
             input.type = "text";
-            input.placeholder = `Enter filename for image #${index + 1}`;
-            input.value = ``;
-            input.className = "border p-2 rounded w-full text-center";
-            container.appendChild(input);
+            input.placeholder = "Quiz, Exam, or Subject Name";
+            input.className = "border p-2 rounded flex-1 text-center";
+
+            filenameDiv.appendChild(fixedName);
+            filenameDiv.appendChild(input);
+            container.appendChild(filenameDiv);
 
             pdfList.appendChild(container);
           });
@@ -283,7 +307,9 @@
           a4: [210, 297],
           letter: [216, 279],
           legal: [216, 356],
+          a3: [297, 420],
         };
+
         const [widthMm, heightMm] = paperDimensions[paperSize];
         const margin = 2;
 
@@ -343,5 +369,3 @@
     </script>
   </body>
 </html>
-
-
