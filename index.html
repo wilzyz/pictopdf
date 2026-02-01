@@ -331,7 +331,7 @@
           const fixedName = document.createElement("span");
           const subject = document.getElementById("subjectInput").value.trim();
           const test = document.getElementById("activityType").value;
-          fixedName.innerText = "SANTIAGO FHRIANE G_"+ test + "_" + subject;
+          fixedName.innerText = "SANTIAGO, FHRIANE G_"+ test + "_" + subject;
           fixedName.className = "text-end p-2 italic font-bold";
 
           // Editable part
@@ -361,7 +361,7 @@
             const fixedName = document.createElement("span");
           const subject = document.getElementById("subjectInput").value.trim();
           const test = document.getElementById("activityType").value;
-          fixedName.innerText = "SANTIAGO FHRIANE G_"+ test + "_" + subject;
+          fixedName.innerText = "SANTIAGO, FHRIANE G_"+ test + "_" + subject;
             fixedName.className = "text-end p-2 italic font-bold";
 
             const input = document.createElement("input");
@@ -419,7 +419,7 @@
           const extra = pdfList.querySelector("input").value.trim();
           const test = document.getElementById("activityType").value;
 
-          let filename = `SANTIAGO FHRIANE G_`;
+          let filename = `SANTIAGO, FHRIANE G_`;
           if (test) filename += `${test}_`;
           if (subject) filename += `${subject}`;
           if (extra) filename += `_${extra}`;
@@ -452,7 +452,7 @@
           const extra = pdfList.querySelector("input").value.trim();
           const test = document.getElementById("activityType").value;
 
-            let filename = `SANTIAGO FHRIANE G_`;
+            let filename = `SANTIAGO, FHRIANE G_`;
             if (test) filename += ` ${test}_`;
             if (subject) filename += ` ${subject}`;
             if (extra) filename += `_${extra}`;
